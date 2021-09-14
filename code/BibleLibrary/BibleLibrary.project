@@ -1,0 +1,27 @@
+#include <pugixml/pugixml.cpp>
+
+#include "BibleData/BibleBook.cpp"
+#include "BibleData/BibleDataCodeFiles.cpp"
+#include "BibleData/BibleVerseId.cpp"
+#include "BibleData/BibleVerseRange.cpp"
+#include "BibleData/BibleWordIndex.cpp"
+#include "BibleData/Token.cpp"
+
+// Only include the data files if they exist.
+// Conditionally including them allows this library to be compiled
+// even if these files have not been generated yet.
+#if __has_include("BibleData/VerseCharacterRanges_KJV.cpp")
+#include "BibleData/VerseCharacterRanges_KJV.cpp"
+#endif
+
+#if __has_include("BibleData/VerseText_KJV.cpp")
+#include "BibleData/VerseText_KJV.cpp"
+#endif
+
+#if __has_include("BibleData/VerseCharacterRanges_WEB.cpp")
+#include "BibleData/VerseCharacterRanges_WEB.cpp"
+#endif
+
+#if __has_include("BibleData/VerseText_WEB.cpp")
+#include "BibleData/VerseText_WEB.cpp"
+#endif
