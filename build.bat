@@ -31,7 +31,7 @@ IF NOT EXIST "%build_directory%" MKDIR "%build_directory%"
 PUSHD "%build_directory%"
 
     REM DEFINE COMPILER OPTIONS.
-    SET COMMON_COMPILER_OPTIONS=/EHsc /WX /W4 /TP /std:c++latest /I ..\..\code /I ..\..\..\CppLibraries /I ..\..\..\CppLibraries\ThirdParty /I ..\..\..\CppLibraries\ThirdParty\SDL /I ..\..\code\BibleLibrary
+    SET COMMON_COMPILER_OPTIONS=/EHsc /W4 /TP /std:c++latest /I ..\..\code /I ..\..\..\CppLibraries /I ..\..\..\CppLibraries\ThirdParty /I ..\..\..\CppLibraries\ThirdParty\SDL /I ..\..\code\BibleLibrary
     SET DEBUG_COMPILER_OPTIONS=%COMMON_COMPILER_OPTIONS% /Z7 /Od /MTd
     SET RELEASE_COMPILER_OPTIONS=%COMMON_COMPILER_OPTIONS% /O2 /MT
     SET LIBRARIES=SDL2.lib SDL2main.lib opengl32.lib gdi32.lib user32.lib
@@ -65,19 +65,22 @@ PUSHD "%build_directory%"
 
     ECHO Done building %BIBLE_PROGRAM_OUTPUT_FILE_BASE_NAME% with %ERRORLEVEL%.
 
+    REM BUILD AND RUN THE BIBLE WORD INDEX VIEWER.
+    SET BIBLE_WORD_INDEX_VIEWER_OUTPUT_FILE_BASE_NAME=BibleWordIndexViewer_%build_mode%
+    SET bible_word_index_viewer_compilation_command_line_arguments=/Fo:%BIBLE_WORD_INDEX_VIEWER_OUTPUT_FILE_BASE_NAME% ..\..\code\BibleWordIndexViewer\BibleWordIndexViewer.project
+    ECHO %bible_word_index_viewer_compilation_command_line_arguments%
+    IF "%build_mode%"=="release" (
+        cl.exe %RELEASE_COMPILER_OPTIONS% %bible_word_index_viewer_compilation_command_line_arguments%
+    ) ELSE (
+        cl.exe %DEBUG_COMPILER_OPTIONS% %bible_word_index_viewer_compilation_command_line_arguments%
+    )
+
+    IF %ERRORLEVEL% EQU 0 (
+        %BIBLE_WORD_INDEX_VIEWER_OUTPUT_FILE_BASE_NAME%.exe
+    )
+
+    ECHO Done with %BIBLE_WORD_INDEX_VIEWER_OUTPUT_FILE_BASE_NAME% with %ERRORLEVEL%.
+
 POPD
-
-
-
-REM DEFINE FILES TO COMPILE/LINK.
-REM SET COMPILATION_FILE="..\..\BibleProgram2.project"
-REM SET MAIN_CODE_DIR="..\..\code"
-REM SET CPP_LIBRARIES_ROOT_DIR="..\..\..\CppLibraries"
-REM SET SDL_DIR=%CPP_LIBRARIES_ROOT_DIR%"\ThirdParty\SDL"
-REM SET LIBRARIES=SDL2.lib SDL2main.lib gl3w_%build_mode%.lib opengl32.lib gdi32.lib user32.lib
-
-REM CREATE THE COMMAND LINE OPTIONS FOR THE FILES TO COMPILE/LINK.
-REM SET INCLUDE_DIRS=/I %MAIN_CODE_DIR% /I "..\..\ThirdParty" /I %CPP_LIBRARIES_ROOT_DIR% /I %CPP_LIBRARIES_ROOT_DIR%\ThirdParty /I %CPP_LIBRARIES_ROOT_DIR%\ThirdParty\gl3w /I %CPP_LIBRARIES_ROOT_DIR%\ThirdParty\SDL
-REM SET PROJECT_FILES_DIRS_AND_LIBS=%COMPILATION_FILE% %INCLUDE_DIRS% /link %LIBRARIES% /LIBPATH:%SDL_DIR% /LIBPATH:%CPP_LIBRARIES_ROOT_DIR%\ThirdParty\gl3w
 
 @ECHO ON

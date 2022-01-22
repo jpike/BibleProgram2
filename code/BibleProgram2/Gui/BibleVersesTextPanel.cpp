@@ -1,5 +1,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include "BibleData/BibleWordIndex.h"
 #include "BibleData/Token.h"
 #include "Gui/BibleVersesTextPanel.h"
 #include "Gui/TextRenderCommand.h"
@@ -614,10 +615,17 @@ namespace GUI
                 lowercase_word.end(),
                 lowercase_word.begin(),
                 [](const char character) { return static_cast<char>(std::tolower(character)); });
+            std::string normalized_word = lowercase_word;
+            auto current_word_and_root_word = BIBLE_DATA::BibleWordIndex::RootWordsByOriginalWord.find(lowercase_word);
+            bool root_word_found = (BIBLE_DATA::BibleWordIndex::RootWordsByOriginalWord.cend() != current_word_and_root_word);
+            if (root_word_found)
+            {
+                normalized_word = current_word_and_root_word->second;
+            }
 
             // GET THE COLOR.
             ImVec4 color = text_render_command.Color;
-            auto current_word_color = user_settings.ColorsByWord.find(lowercase_word);
+            auto current_word_color = user_settings.ColorsByWord.find(normalized_word);
             bool current_word_color_exists = (user_settings.ColorsByWord.cend() != current_word_color);
             if (current_word_color_exists)
             {
@@ -627,13 +635,13 @@ namespace GUI
             // SET THE TEXT COLOR.
             // A temporarily different (usually) highlight color is used when hovering over.
             bool mouse_over_text_bounding_box = text_render_command.TextBoundingBox.Contains(gui_context.IO.MousePos);
-            bool is_currently_highlighted_word = (lowercase_word == currently_highlighted_word) || mouse_over_text_bounding_box;
+            bool is_currently_highlighted_word = (normalized_word == currently_highlighted_word) || mouse_over_text_bounding_box;
             if (is_currently_highlighted_word)
             {
                 /// @todo   Something other than yellow for highlights?
                 color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
 
-                currently_highlighted_word = lowercase_word;
+                currently_highlighted_word = normalized_word;
             }
 
             if (mouse_over_text_bounding_box)

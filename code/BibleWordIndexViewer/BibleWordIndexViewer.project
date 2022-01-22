@@ -1,0 +1,2 @@
+#include "BibleLibrary/BibleLibrary.project"
+#include "main.cpp"
