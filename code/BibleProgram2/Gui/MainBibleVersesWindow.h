@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include "BibleData/BibleVerse.h"
+#include "BibleData/BibleVerseId.h"
 #include "BibleData/BibleVerseRange.h"
 #include "Gui/UserSettings.h"
 
@@ -15,6 +16,7 @@ namespace GUI
         void UpdateAndRender(
             std::string& currently_highlighted_word, 
             std::string& currently_selected_word,
+            BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
             UserSettings& user_settings);
 
         /// True if the window is open; false otherwise.

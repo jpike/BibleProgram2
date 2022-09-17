@@ -8,10 +8,12 @@ namespace GUI
     /// Updates and renders a single frame of the window, if it's open.
     /// @param[in,out]  currently_highlighted_word - The currently highlighted word.
     /// @param[in,out]  currently_selected_word - The currently selected word.
+    /// @param[in,out]  currently_selected_verse_id - The ID of the currently selected verse (if one exists).
     /// @param[in,out]  user_settings - User settings.
     void MainBibleVersesWindow::UpdateAndRender(
         std::string& currently_highlighted_word, 
         std::string& currently_selected_word,
+        BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
         UserSettings& user_settings)
     {
         // DON'T RENDER ANYTHING IF THE WINDOW ISN'T OPEN.
@@ -89,7 +91,12 @@ namespace GUI
 
                         // REDNER THE VERSES FOR THE TRANSLATION.
                         const std::vector<BIBLE_DATA::BibleVerse>& verses_for_translation = VersesByTranslationName[translation_name];
-                        BibleVersesTextPanel::UpdateAndRender(verses_for_translation, currently_highlighted_word, currently_selected_word, user_settings);
+                        BibleVersesTextPanel::UpdateAndRender(
+                            verses_for_translation, 
+                            currently_highlighted_word, 
+                            currently_selected_word, 
+                            currently_selected_verse_id,
+                            user_settings);
                     }
                     ImGui::EndChild();
 

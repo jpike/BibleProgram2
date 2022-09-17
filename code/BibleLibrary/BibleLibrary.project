@@ -1,7 +1,10 @@
 #include <pugixml/pugixml.cpp>
 
+#include "BibleData/BibleAuthor.cpp"
 #include "BibleData/BibleBook.cpp"
+#include "BibleData/BibleBookGenre.cpp"
 #include "BibleData/BibleDataCodeFiles.cpp"
+#include "BibleData/BibleTestament.cpp"
 #include "BibleData/BibleVerseId.cpp"
 #include "BibleData/BibleVerseRange.cpp"
 #include "BibleData/BibleWordIndex.cpp"

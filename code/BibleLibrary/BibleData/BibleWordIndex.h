@@ -7,6 +7,7 @@
 #include <vector>
 #include "BibleData/BibleVerse.h"
 #include "BibleData/BibleVerseIdWithCharacterRange.h"
+#include "BibleData/CategorizedBibleVerseSearchResults.h"
 
 namespace BIBLE_DATA
 {
@@ -25,6 +26,9 @@ namespace BIBLE_DATA
 
         static BibleWordIndex Build(const BibleTranslation* bible_translation);
         std::vector<BibleVerse> GetMatchingVerses(const std::string_view word) const;
+        CategorizedBibleVerseSearchResults GetMatchingVerses(
+            const BibleVerseId& verse_id,
+            const std::string_view word) const;
 
         /// The Bible translation this index corresponds to.
         const BibleTranslation* Bible = nullptr;

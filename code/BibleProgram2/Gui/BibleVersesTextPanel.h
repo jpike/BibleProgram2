@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "BibleData/BibleVerse.h"
+#include "BibleData/BibleVerseId.h"
 #include "Gui/UserSettings.h"
 
 namespace GUI
@@ -18,6 +19,7 @@ namespace GUI
             const std::vector<BIBLE_DATA::BibleVerse>& verses, 
             std::string& currently_highlighted_word,
             std::string& currently_selected_word,
+            BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
             UserSettings& user_settings);
     };
 }

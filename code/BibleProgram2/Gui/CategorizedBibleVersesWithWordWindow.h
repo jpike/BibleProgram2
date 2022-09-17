@@ -4,18 +4,19 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "BibleData/BibleVerse.h"
 #include "BibleData/BibleVerseId.h"
+#include "BibleData/CategorizedBibleVerseSearchResults.h"
 #include "Gui/UserSettings.h"
 
 namespace GUI
 {
-    /// A window that displays verses that contain a given word.
-    class BibleVersesWithWordWindow
+    /// A window that displays verses that contain a given word
+    /// in categorized form (based on an original word).
+    class CategorizedBibleVersesWithWordWindow
     {
     public:
         void UpdateAndRender(
-            std::string& currently_highlighted_word, 
+            std::string& currently_highlighted_word,
             std::string& currently_selected_word,
             BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
             UserSettings& user_settings);
@@ -26,6 +27,6 @@ namespace GUI
         std::string Word = "";
         /// The current verses being displayed.
         /// @todo   std::vector<BIBLE_DATA::BibleVerse> Verses = {};
-        std::unordered_map<std::string, std::vector<BIBLE_DATA::BibleVerse>> VersesByTranslationName = {};
+        std::unordered_map<std::string, BIBLE_DATA::CategorizedBibleVerseSearchResults> VersesByTranslationName = {};
     };
 }

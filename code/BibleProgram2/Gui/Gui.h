@@ -4,6 +4,7 @@
 #include "BibleData/Bibles.h"
 #include "Graphics/OpenGL/OpenGLGraphicsDevice.h"
 #include "Gui/BibleVersesWithWordWindow.h"
+#include "Gui/CategorizedBibleVersesWithWordWindow.h"
 #include "Gui/Debugging/AboutWindow.h"
 #include "Gui/Debugging/DemoWindow.h"
 #include "Gui/Debugging/GuiMetricsWindow.h"
@@ -28,12 +29,16 @@ namespace GUI
 
         void Shutdown();
 
+        /// The currently selected Bible verse ID.
+        BIBLE_DATA::BibleVerseId CurrentlySelectedBibleVerseId = {};
         /// The word currently highlighted in the GUI.
         std::string CurrentlyHighlightedWord = "";
         /// The window for displaying the main verse(s) being studied.
         MainBibleVersesWindow MainBibleVersesWindow = {};
         /// The window for other verses with the currently clicked-on word.
         BibleVersesWithWordWindow BibleVersesWithWordWindow = {};
+        /// The window for other verses (in categorized form) with the currently clicked-on word from a verse.
+        CategorizedBibleVersesWithWordWindow CategorizedBibleVersesWithWordWindow = {};
         /// A window displaying basic GUI metrics.
         DEBUGGING::GuiMetricsWindow MetricsWindow = {};
         /// A window allowing editing of GUI styles.

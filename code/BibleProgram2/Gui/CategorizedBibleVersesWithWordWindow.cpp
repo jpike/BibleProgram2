@@ -1,6 +1,6 @@
 #include <imgui/imgui.h>
 #include "Gui/BibleVersesTextPanel.h"
-#include "Gui/BibleVersesWithWordWindow.h"
+#include "Gui/CategorizedBibleVersesWithWordWindow.h"
 
 namespace GUI
 {
@@ -9,8 +9,8 @@ namespace GUI
     /// @param[in,out]  currently_selected_word - The currently selected word.
     /// @param[in,out]  currently_selected_verse_id - The ID of the currently selected verse (if one exists).
     /// @param[in,out]  user_settings - User settings.
-    void BibleVersesWithWordWindow::UpdateAndRender(
-        std::string& currently_highlighted_word, 
+    void CategorizedBibleVersesWithWordWindow::UpdateAndRender(
+        std::string& currently_highlighted_word,
         std::string& currently_selected_word,
         BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
         UserSettings& user_settings)
@@ -86,6 +86,7 @@ namespace GUI
                 // SET THE COLUMNS FOR THIS WINDOW.
                 ImGui::Columns(column_count);
 
+                /// @todo   Handle multiple translations properly!!
                 for (const auto& translation_name_with_verses : VersesByTranslationName)
                 {
                     const std::string& translation_name = translation_name_with_verses.first;
@@ -102,14 +103,90 @@ namespace GUI
                         // RENDER THE TRANSLATION NAME.
                         ImGui::Text(translation_name.c_str());
 
-                        // REDNER THE VERSES FOR THE TRANSLATION.
-                        const std::vector<BIBLE_DATA::BibleVerse>& verses_for_translation = VersesByTranslationName[translation_name];
-                        BibleVersesTextPanel::UpdateAndRender(
-                            verses_for_translation, 
-                            currently_highlighted_word, 
-                            currently_selected_word, 
-                            currently_selected_verse_id,
-                            user_settings);
+                        // GET THE VERSES FOR THE TRANSLATION.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+
+                        // DISPLAY THE SEARCH RESULTS.
+                        constexpr unsigned int SEARCH_CATEGORY_COUNT = 6;
+                        ImGui::Columns(SEARCH_CATEGORY_COUNT);
+
+                        // DISPLAY VERSES FOR THE SAME CHAPTER.
+                        if (ImGui::BeginChild("Same Chapter"))
+                        {
+                            BibleVersesTextPanel::UpdateAndRender(
+                                current_search_results.VersesInSameChapter,
+                                currently_highlighted_word,
+                                currently_selected_word,
+                                currently_selected_verse_id,
+                                user_settings);
+                        }
+                        ImGui::EndChild();
+                        ImGui::NextColumn();
+
+                        // DISPLAY VERSES FOR THE SAME BOOK.
+                        if (ImGui::BeginChild("Same Book"))
+                        {
+                            BibleVersesTextPanel::UpdateAndRender(
+                                current_search_results.VersesInSameBook,
+                                currently_highlighted_word,
+                                currently_selected_word,
+                                currently_selected_verse_id,
+                                user_settings);
+                        }
+                        ImGui::EndChild();
+                        ImGui::NextColumn();
+
+                        // DISPLAY VERSES FOR THE SAME AUTHOR.
+                        if (ImGui::BeginChild("Same Author"))
+                        {
+                            BibleVersesTextPanel::UpdateAndRender(
+                                current_search_results.VersesInOtherBooksByAuthor,
+                                currently_highlighted_word,
+                                currently_selected_word,
+                                currently_selected_verse_id,
+                                user_settings);
+                        }
+                        ImGui::EndChild();
+                        ImGui::NextColumn();
+
+                        // DISPLAY VERSES FOR THE SAME GENRE IN THE SAME TESTAMENT.
+                        if (ImGui::BeginChild("Same Genre in Testament"))
+                        {
+                            BibleVersesTextPanel::UpdateAndRender(
+                                current_search_results.VersesInBooksOfSameGenreByOtherAuthorsInSameTestament,
+                                currently_highlighted_word,
+                                currently_selected_word,
+                                currently_selected_verse_id,
+                                user_settings);
+                        }
+                        ImGui::EndChild();
+                        ImGui::NextColumn();
+
+                        // DISPLAY VERSES FROM ELSEWHERE IN THE SAME TESTAMENT.
+                        if (ImGui::BeginChild("Same Testament"))
+                        {
+                            BibleVersesTextPanel::UpdateAndRender(
+                                current_search_results.VersesElsewhereInSameTestament,
+                                currently_highlighted_word,
+                                currently_selected_word,
+                                currently_selected_verse_id,
+                                user_settings);
+                        }
+                        ImGui::EndChild();
+                        ImGui::NextColumn();
+
+                        // DISPLAY VERSES FROM THE OTHER TESTAMENT.
+                        if (ImGui::BeginChild("Other Testament"))
+                        {
+                            BibleVersesTextPanel::UpdateAndRender(
+                                current_search_results.VersesFromOtherTestament,
+                                currently_highlighted_word,
+                                currently_selected_word,
+                                currently_selected_verse_id,
+                                user_settings);
+                        }
+                        ImGui::EndChild();
+                        ImGui::NextColumn();
                     }
                     ImGui::EndChild();
 

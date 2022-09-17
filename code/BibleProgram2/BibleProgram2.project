@@ -15,6 +15,7 @@
 
 #include "Gui/BibleVersesTextPanel.cpp"
 #include "Gui/BibleVersesWithWordWindow.cpp"
+#include "Gui/CategorizedBibleVersesWithWordWindow.cpp"
 #include "Gui/Debugging/AboutWindow.cpp"
 #include "Gui/Debugging/DemoWindow.cpp"
 #include "Gui/Debugging/GuiMetricsWindow.cpp"

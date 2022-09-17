@@ -3,12 +3,16 @@
 #include <string>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include "BibleData/BibleVerseId.h"
 
 namespace GUI
 {
     /// A simple command for rendering some text.
     struct TextRenderCommand
     {
+        /// The ID of the Bible verse associated with the command.
+        /// @todo   Figure out a better place to put this?
+        BIBLE_DATA::BibleVerseId BibleVerseId = {};
         /// The text to render.
         std::string Text = "";
         /// The color of the text.

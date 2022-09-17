@@ -1,5 +1,8 @@
 #include <algorithm>
 #include <cctype>
+#include "BibleData/BibleAuthor.h"
+#include "BibleData/BibleBookGenre.h"
+#include "BibleData/BibleTestament.h"
 #include "BibleData/BibleTranslation.h"
 #include "BibleData/BibleWordIndex.h"
 
@@ -4818,5 +4821,143 @@ namespace BIBLE_DATA
         }
 
         return matching_verses;
+    }
+
+    /// Gets matching verses for the corresponding word in a categorized form.
+    /// @param[in]  verse_id - The ID of the verse to use for categorization purposes.
+    /// @param[in]  word - The word for which to get matching verses.
+    /// @return The matching verses in categorized form.
+    CategorizedBibleVerseSearchResults BibleWordIndex::GetMatchingVerses(
+        const BibleVerseId& verse_id,
+        const std::string_view word) const
+    {
+        // INITIALIZE THE SEARCH RESULTS.
+        CategorizedBibleVerseSearchResults search_results =
+        {
+            .SearchedWord = std::string(word),
+            .OriginalVerseId = verse_id,
+        };
+
+        // MAKE SURE THE WORD IS LOWERCASE.
+        std::string lowercase_word(word);
+        std::transform(
+            lowercase_word.begin(),
+            lowercase_word.end(),
+            lowercase_word.begin(),
+            [](const char character)
+            {
+                return static_cast<char>(std::tolower(static_cast<int>(character)));
+            });
+
+        // GET ANY ROOT WORD IF APPLICABLE.
+        auto current_word_and_root_word = RootWordsByOriginalWord.find(lowercase_word);
+        bool different_root_word_found = (RootWordsByOriginalWord.cend() != current_word_and_root_word);
+        if (different_root_word_found)
+        {
+            lowercase_word = current_word_and_root_word->second;
+        }
+
+        // SEARCH FOR ANY MATCHING VERSES.
+        auto word_with_verse_ids_with_character_ranges = BibleVersesByWord.find(lowercase_word);
+        bool word_found = (BibleVersesByWord.cend() != word_with_verse_ids_with_character_ranges);
+        if (!word_found)
+        {
+            // INDICATE THAT NO MATCHING VERSES COULD BE FOUND.
+            return {};
+        }
+
+        // GET THE FULL VERSES FOR THE MATCHING VERSES IDENTIFIED ABOVE.
+        const std::vector<BibleVerseIdWithCharacterRange>& verse_ids_with_character_ranges = word_with_verse_ids_with_character_ranges->second;
+
+        std::printf("Matching verse count: %zu\n", verse_ids_with_character_ranges.size());
+
+        for (const BibleVerseIdWithCharacterRange& verse_id_with_character_range : verse_ids_with_character_ranges)
+        {
+            // GET THE CURRENT VERSE TEXT.
+            const char* first_character_in_verse = Bible->Text + verse_id_with_character_range.FirstCharacterOffsetIntoFullBibleText;
+            std::size_t verse_character_count = (
+                verse_id_with_character_range.LastCharacterOffsetIntoFullBibleText -
+                verse_id_with_character_range.FirstCharacterOffsetIntoFullBibleText);
+            std::string_view current_verse_text(first_character_in_verse, verse_character_count);
+
+            // GET THE FULL FORM OF THE CURRENT MATCHING VERSE.
+            BibleVerse current_verse =
+            {
+                .Id = BibleVerseId
+                {
+                    .Book = verse_id_with_character_range.Id.Book,
+                    .ChapterNumber = verse_id_with_character_range.Id.ChapterNumber,
+                    .VerseNumber = verse_id_with_character_range.Id.VerseNumber,
+                },
+                .Text = current_verse_text
+            };
+
+            // PLACE THE VERSE IN THE APPROPRIATE CATEGORY OF SEARCH RESULTS.
+            bool in_same_book = (verse_id.Book == current_verse.Id.Book);
+            if (in_same_book)
+            {
+                // CHECK IF THE VERSE IS IN THE SAME CHAPTER.
+                bool in_same_chapter = (verse_id.ChapterNumber == current_verse.Id.ChapterNumber);
+                if (in_same_chapter)
+                {
+                    // CHECK IF THE SAME IS THE SEARCHED FOR VERSE.
+                    // The same verse as that searched for does not need to be repeated.
+                    bool is_same_verse = (verse_id.VerseNumber == current_verse.Id.VerseNumber);
+                    if (!is_same_verse)
+                    {
+                        search_results.VersesInSameChapter.push_back(current_verse);
+                    }
+                }
+                else
+                {
+                    // STORE THE VERSE AS BEING IN THE SAME BOOK.
+                    search_results.VersesInSameBook.push_back(current_verse);
+                }
+            }
+            else
+            {
+                // CHECK IF THE VERSE IS IN ANOTHER BOOK BY THE SAME AUTHOR.
+                BibleAuthor::Id searched_verse_author = BibleAuthor::Get(verse_id);
+                BibleAuthor::Id current_verse_author = BibleAuthor::Get(current_verse.Id);
+                bool verse_in_other_book_by_same_author = (searched_verse_author == current_verse_author);
+                if (verse_in_other_book_by_same_author)
+                {
+                    // STORE THE VERSE AS BEING IN ANOTHER BOOK BY THE SAME AUTHOR.
+                    search_results.VersesInOtherBooksByAuthor.push_back(current_verse);
+                }
+                else
+                {
+                    // CHECK IF THE VERSE IS IN THE SAME TESTAMENT.
+                    BibleTestament::Id searched_verse_testament = BibleTestament::Get(verse_id);
+                    BibleTestament::Id current_verse_testament = BibleTestament::Get(current_verse.Id);
+                    bool verse_in_same_testament = (searched_verse_testament == current_verse_testament);
+                    if (verse_in_same_testament)
+                    {
+                        // CHECK IF THE VERSE IS IN ANOTHER BOOK OF THE SAME GENRE.
+                        BibleBookGenre::Id searched_verse_book_genre = BibleBookGenre::Get(verse_id);
+                        BibleBookGenre::Id current_verse_book_genre = BibleBookGenre::Get(current_verse.Id);
+                        bool verse_in_other_book_of_same_genre = (searched_verse_book_genre == current_verse_book_genre);
+                        if (verse_in_other_book_of_same_genre)
+                        {
+                            // STORE THE VERSE AS BEING IN ANOTHER BOOK OF THE SAME GENRE IN THE TESTAMENT.
+                            search_results.VersesInBooksOfSameGenreByOtherAuthorsInSameTestament.push_back(current_verse);
+                        }
+                        else
+                        {
+                            // STORE THE VERSE AS BEING ELSEWHERE IN THE SAME TESTAMENT.
+                            search_results.VersesElsewhereInSameTestament.push_back(current_verse);
+                        }
+                    }
+                    else
+                    {
+                        // STORE THE VERSE AS BEING IN THE OTHER TESTAMENT.
+                        search_results.VersesFromOtherTestament.push_back(current_verse);
+                    }
+                }
+            }
+        }
+
+        // RETURN THE SEARCH RESULTS.
+        return search_results;
     }
 }

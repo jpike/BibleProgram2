@@ -14,11 +14,13 @@ namespace GUI
     /// @param[in]  verses - The verse content to render.
     /// @param[in,out]  currently_highlighted_word - The currently highlighted word.
     /// @param[in,out]  currently_selected_word - The currently selected word.
+    /// @param[in,out]  currently_selected_verse_id - The ID of the currently selected verse (if one exists).
     /// @param[in,out]  user_settings - User settings.
     void BibleVersesTextPanel::UpdateAndRender(
         const std::vector<BIBLE_DATA::BibleVerse>& verses, 
         std::string& currently_highlighted_word,
         std::string& currently_selected_word,
+        BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
         UserSettings& user_settings)
     {
         // COMPUTE THE BOUNDING BOX FOR THE VERSE TEXT.
@@ -64,6 +66,7 @@ namespace GUI
 
                 TextRenderCommand book_title_render_command =
                 {
+                    .BibleVerseId = verse.Id,
                     .Text = book_name + '\n',
                     .Color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
                     .DrawPosition = current_draw_position,
@@ -97,6 +100,7 @@ namespace GUI
 
                 TextRenderCommand chapter_title_render_command =
                 {
+                    .BibleVerseId = verse.Id,
                     .Text = chapter_text + '\n',
                     .Color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
                     .DrawPosition = current_draw_position,
@@ -142,6 +146,7 @@ namespace GUI
 
                 TextRenderCommand verse_number_render_command =
                 {
+                    .BibleVerseId = verse.Id,
                     .Text = verse_number,
                     .Color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
                     .DrawPosition = current_draw_position,
@@ -176,6 +181,7 @@ namespace GUI
 
                 TextRenderCommand token_render_command =
                 {
+                    .BibleVerseId = verse.Id,
                     .Text = token_text,
                     .Color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
                     .DrawPosition = current_draw_position,
@@ -652,6 +658,8 @@ namespace GUI
                     std::printf("Clicked on %s\n", currently_highlighted_word.c_str());
 
                     currently_selected_word = currently_highlighted_word;
+
+                    currently_selected_verse_id = text_render_command.BibleVerseId;
                 }
             }
                    
