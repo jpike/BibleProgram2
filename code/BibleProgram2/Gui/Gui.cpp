@@ -1,6 +1,6 @@
 #include <imgui/imgui.h>
-#include <imgui/imgui_impl_opengl3.h>
-#include <imgui/imgui_impl_sdl.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_sdl.h>
 #include "BibleData/BibleVerse.h"
 #include "BibleData/BibleVerseRange.h"
 #include "Debugging/Timer.h"
@@ -18,7 +18,7 @@ namespace GUI
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
-        ImGui_ImplSDL2_InitForOpenGL(window.UnderlyingWindow, graphics_device.Context);
+        ImGui_ImplSDL2_InitForOpenGL(window.UnderlyingWindow, graphics_device.OpenGLRenderContext);
         const char* const GLSL_VERSION = "#version 130";
         ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 

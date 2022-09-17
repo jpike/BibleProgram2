@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include "BibleData/BibleWordIndex.h"

@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <exception>
 #include <optional>
-#include <imgui/imgui_impl_sdl.h>
+#include <imgui/backends/imgui_impl_sdl.h>
 #include <SDL/SDL.h>
 #undef main
 #include "Debugging/Timer.h"
@@ -30,8 +30,8 @@ int main()
     // If no errors occurred, success is assumed.
     int exit_code = EXIT_SUCCESS;
     // A few variables need to be exposed for shutdown.
-    std::optional<WINDOWING::SdlWindow> window = std::nullopt;
-    std::optional<GRAPHICS::OPEN_GL::OpenGLGraphicsDevice> graphics_device = std::nullopt;
+    std::unique_ptr<WINDOWING::SdlWindow> window = nullptr;
+    std::unique_ptr<GRAPHICS::OPEN_GL::OpenGLGraphicsDevice> graphics_device = nullptr;
     std::optional<GUI::Gui> gui = std::nullopt;
     GUI::UserSettings user_settings;
     BIBLE_DATA::Bibles bibles;
@@ -70,7 +70,7 @@ int main()
         // CREATE THE WINDOW.
         constexpr int SCREEN_WIDTH_IN_PIXELS = 1400;
         constexpr int SCREEN_HEIGHT_IN_PIXELS = 900;
-        window = WINDOWING::SdlWindow::Create("Bible Program 2", SCREEN_WIDTH_IN_PIXELS, SCREEN_HEIGHT_IN_PIXELS);
+        window = WINDOWING::SdlWindow::Create("Bible Program 2", SCREEN_WIDTH_IN_PIXELS, SCREEN_HEIGHT_IN_PIXELS, GRAPHICS::HARDWARE::GraphicsDeviceType::OPEN_GL);
         ASSERT_THEN_IF_NOT(window)
         {
             std::fprintf(stderr, "Failed to create window.  SDL Error: %s\n", SDL_GetError());
@@ -79,7 +79,7 @@ int main()
         }
 
         // INITIALIZE THE GRAPHICS DEVICE.
-        graphics_device = GRAPHICS::OPEN_GL::OpenGLGraphicsDevice::Initialize(*window);
+        graphics_device = GRAPHICS::OPEN_GL::OpenGLGraphicsDevice::ConnectTo(*window);
 
         // CREATE THE GUI.
         gui = GUI::Gui::Create(*window, *graphics_device);
@@ -98,11 +98,11 @@ int main()
             }
 
             // UPDATE AND RENDER THE GUI.
-            graphics_device->Clear();
+            graphics_device->ClearBackground(GRAPHICS::Color::BLACK);
 
             gui->UpdateAndRender(*window, bibles, user_settings);
 
-            graphics_device->Display(*window);
+            graphics_device->DisplayRenderedImage(*window);
         }
     }
     catch (const std::exception& exception)
