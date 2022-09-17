@@ -18,7 +18,7 @@ namespace GUI
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
-        ImGui_ImplSDL2_InitForOpenGL(window.UnderlyingWindow, graphics_device.OpenGLRenderContext);
+        ImGui_ImplSDL2_InitForOpenGL(window.UnderlyingWindow, graphics_device.SdlOpenGLContext);
         const char* const GLSL_VERSION = "#version 130";
         ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 
