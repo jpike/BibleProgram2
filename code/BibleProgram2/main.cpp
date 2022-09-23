@@ -18,6 +18,7 @@
 #include "BibleData/VerseText_KJV.h"
 #include "BibleData/VerseText_WEB.h"
 #include "Gui/Gui.h"
+#include "Gui/UserSelections.h"
 #include "Gui/UserSettings.h"
 
 int main()
@@ -33,10 +34,11 @@ int main()
     std::unique_ptr<WINDOWING::SdlWindow> window = nullptr;
     std::unique_ptr<GRAPHICS::OPEN_GL::OpenGLGraphicsDevice> graphics_device = nullptr;
     std::optional<GUI::Gui> gui = std::nullopt;
-    GUI::UserSettings user_settings;
-    BIBLE_DATA::Bibles bibles;
     try
     {
+        // INITIALIZE BASIC DATA BASED ON BIBLE TRANSLATIONS.
+        GUI::UserSettings user_settings;
+        BIBLE_DATA::Bibles bibles;
         {
             std::printf("Initializing Bible translations...\n");
             DEBUGGING::SystemClockTimer system_clock_timer("Bible Data Initialization System Clock Timer");
@@ -68,9 +70,15 @@ int main()
         }
 
         // CREATE THE WINDOW.
+        // It is maximized to allow most effective use of screenspace.
         constexpr int SCREEN_WIDTH_IN_PIXELS = 1400;
         constexpr int SCREEN_HEIGHT_IN_PIXELS = 900;
-        window = WINDOWING::SdlWindow::Create("Bible Program 2", SCREEN_WIDTH_IN_PIXELS, SCREEN_HEIGHT_IN_PIXELS, GRAPHICS::HARDWARE::GraphicsDeviceType::OPEN_GL);
+        window = WINDOWING::SdlWindow::Create(
+            "Bible Program 2", 
+            SCREEN_WIDTH_IN_PIXELS, 
+            SCREEN_HEIGHT_IN_PIXELS, 
+            GRAPHICS::HARDWARE::GraphicsDeviceType::OPEN_GL,
+            SDL_WINDOW_MAXIMIZED);
         ASSERT_THEN_IF_NOT(window)
         {
             std::fprintf(stderr, "Failed to create window.  SDL Error: %s\n", SDL_GetError());
@@ -84,6 +92,10 @@ int main()
         // CREATE THE GUI.
         gui = GUI::Gui::Create(*window, *graphics_device);
 
+        // CREATE THE INITIAL USER SELECTIONS.
+        GUI::UserSelections user_selections;
+
+        // UPDATE AND DISPLAY THE WINDOW WHILE IT REMAINS OPEN.
         while (window->IsOpen)
         {
             // HANDLE APPLICATION EVENTS.
@@ -100,7 +112,7 @@ int main()
             // UPDATE AND RENDER THE GUI.
             graphics_device->ClearBackground(GRAPHICS::Color::BLACK);
 
-            gui->UpdateAndRender(*window, bibles, user_settings);
+            gui->UpdateAndRender(*window, bibles, user_selections, user_settings);
 
             graphics_device->DisplayRenderedImage(*window);
         }

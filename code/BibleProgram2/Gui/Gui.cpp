@@ -29,10 +29,12 @@ namespace GUI
     /// Updates the GUI in response to user input and renders it for the provided window.
     /// @param[in]  window - The window being interacted with and rendered to.
     /// @param[in]  bibles - The Bibles to use for verse data in the GUI.
+    /// @param[in,out]  user_selections - The selections the user has made in the GUI.
     /// @param[in,out]  user_settings - User settings for the GUI.
     void Gui::UpdateAndRender(
         const WINDOWING::SdlWindow& window, 
         const BIBLE_DATA::Bibles& bibles,
+        UserSelections& user_selections,
         UserSettings& user_settings)
     {
         // START RENDERING A NEW FRAME OF THE GUI.
@@ -97,12 +99,13 @@ namespace GUI
             if (displayed_main_verses_changed)
             {
                 // CLEAR THE CURRENTLY SELECTED VERSE.
-                CurrentlySelectedBibleVerseId = {};
+                user_selections.CurrentlySelectedBibleVerseId = {};
 
                 // PARSE THE VERSE RANGE.
                 std::optional<BIBLE_DATA::BibleVerseRange> verse_range = BIBLE_DATA::BibleVerseRange::Parse(verse_range_text);
                 if (verse_range)
                 {
+                    // PRINT OUT THE VERSE RANGE FOR DEBUGGING.
                     std::printf(
                         "Verse range: %u %u:%u - %u %u:%u\n",
                         verse_range->StartingVerse.Book,
@@ -112,120 +115,27 @@ namespace GUI
                         verse_range->EndingVerse.ChapterNumber,
                         verse_range->EndingVerse.VerseNumber);
 
-                    MainBibleVersesWindow.Open = true;
-                    MainBibleVersesWindow.VerseRange = *verse_range;
-
-                    // POPULATE THE VERSE TEXT IN THE MAIN WINDOW.
-                    MainBibleVersesWindow.VersesByTranslationName.clear();
-                    for (const auto& translation_name_with_display_status : user_settings.BibleTranslationDisplayStatusesByName)
-                    {
-                        // SKIP OVER ANY TRANSLATION THAT ARE NOT VISIBLE.
-                        bool translation_visible = translation_name_with_display_status.second;
-                        if (!translation_visible)
-                        {
-                            continue;
-                        }
-
-                        // GET ALL VERSES IN THE RANGE.
-                        const std::string& translation_name = translation_name_with_display_status.first;
-                        std::vector<BIBLE_DATA::BibleVerse> verses;
-                        {
-                            ::DEBUGGING::SystemClockTimer system_clock_timer("Bible Verse Finding System Clock Timer");
-                            ::DEBUGGING::HighResolutionTimer high_resolution_timer("Bible Verse Finding High-Resolution Timer");
-
-                            // GET ALL VERSES IN THE RANGE.
-                            const auto& name_with_bible_translation = bibles.TranslationsByAbbreviatedName.find(translation_name);
-                            const BIBLE_DATA::BibleTranslation& bible_translation = name_with_bible_translation->second;
-                            for (const BIBLE_DATA::BibleVerseIdWithCharacterRange& verse_id_with_character_range : bible_translation.VerseCharacterRanges)
-                            {
-                                // CHECK IF THE CURRENT VERSE IS IN THE RANGE.
-                                bool is_matching_verse = (
-                                    (verse_range->StartingVerse.Book <= verse_id_with_character_range.Id.Book) && (verse_id_with_character_range.Id.Book <= verse_range->EndingVerse.Book) &&
-                                    (verse_range->StartingVerse.ChapterNumber <= verse_id_with_character_range.Id.ChapterNumber) && (verse_id_with_character_range.Id.ChapterNumber <= verse_range->EndingVerse.ChapterNumber) &&
-                                    (verse_range->StartingVerse.VerseNumber <= verse_id_with_character_range.Id.VerseNumber) && (verse_id_with_character_range.Id.VerseNumber <= verse_range->EndingVerse.VerseNumber));
-                                if (is_matching_verse)
-                                {
-                                    // STORE THE CURRENT VERSE.
-                                    const char* first_character_in_verse = bible_translation.Text + verse_id_with_character_range.FirstCharacterOffsetIntoFullBibleText;
-                                    std::size_t verse_character_count = (
-                                        verse_id_with_character_range.LastCharacterOffsetIntoFullBibleText - 
-                                        verse_id_with_character_range.FirstCharacterOffsetIntoFullBibleText);
-                                    std::string_view current_verse_text = std::string_view(first_character_in_verse, verse_character_count);
-
-                                    BIBLE_DATA::BibleVerse current_verse = 
-                                    {
-                                        .Id = verse_id_with_character_range.Id,
-                                        .Text = current_verse_text
-                                    };
-
-                                    verses.emplace_back(current_verse);
-
-                                    // STOP CHECKING FOR MORE VERSES IF THE END OF THE RANGE HAS BEEN REACHED.
-                                    bool is_final_verse = (verse_id_with_character_range.Id == verse_range->EndingVerse);
-                                    if (is_final_verse)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        MainBibleVersesWindow.VersesByTranslationName[translation_name] = verses;
-                    }                   
+                    // DISPLAY THE UPDATED RANGE OF VERSES IN THE MAIN WINDOW.
+                    MainBibleVersesWindow.OpenForVerses(*verse_range, bibles, user_settings);                  
                 }
             }
 
             ImGui::EndMainMenuBar();
         }
 
-        // UPDATE AND RENDER ALL WINDOWS.
-        std::string currently_selected_word = CategorizedBibleVersesWithWordWindow.Word;
-        MainBibleVersesWindow.UpdateAndRender(
-            CurrentlyHighlightedWord, 
-            currently_selected_word, 
-            CurrentlySelectedBibleVerseId,
-            user_settings);
+        // UPDATE AND RENDER THE MAIN VERSES WINDOW.
+        std::string initial_selected_word = user_selections.CurrentlySelectedWord;
+        MainBibleVersesWindow.UpdateAndRender(user_selections, user_settings);
 
-#if WINDOW_SHOWING_ALL_BIBLE_VERSES_AT_ONCE
+        // UPDATE AND RENDER THE WINDOW FOR DISPLAYING CATEGORIZED VERSES.
         // Refreshing of the window for the current word may be needed if the word or translation changed.
-        bool new_word_selected = (currently_selected_word != BibleVersesWithWordWindow.Word);
-        bool displayed_verses_with_word_outdated = (new_word_selected || translation_changed);
-        if (displayed_verses_with_word_outdated)
-        {
-            BibleVersesWithWordWindow.Open = true;
-            BibleVersesWithWordWindow.Word = currently_selected_word;
-
-            // UPDATE THE VERSES DISPLAYED IN THE WINDOW.
-            BibleVersesWithWordWindow.VersesByTranslationName.clear();
-            for (const auto& translation_name_with_display_status : user_settings.BibleTranslationDisplayStatusesByName)
-            {
-                // SKIP OVER ANY TRANSLATION THAT ARE NOT VISIBLE.
-                bool translation_visible = translation_name_with_display_status.second;
-                if (!translation_visible)
-                {
-                    continue;
-                }
-
-                // GET VERSES FOR THE CURRENT WORD IN THE CURRENT TRANSLATION.
-                const std::string& translation_name = translation_name_with_display_status.first;
-                const auto& name_with_bible_translation = bibles.TranslationsByAbbreviatedName.find(translation_name);
-                const BIBLE_DATA::BibleTranslation& bible_translation = name_with_bible_translation->second;
-                BibleVersesWithWordWindow.VersesByTranslationName[translation_name] = bible_translation.WordIndex.GetMatchingVerses(currently_selected_word);
-            }
-        }
-
-        BibleVersesWithWordWindow.UpdateAndRender(CurrentlyHighlightedWord, currently_selected_word, user_settings);
-#else
-        // Refreshing of the window for the current word may be needed if the word or translation changed.
-        bool new_word_selected = (currently_selected_word != CategorizedBibleVersesWithWordWindow.Word);
+        bool new_word_selected = (initial_selected_word != user_selections.CurrentlySelectedWord);
         bool displayed_verses_with_word_outdated = (new_word_selected || translation_changed);
         if (displayed_verses_with_word_outdated)
         {
             CategorizedBibleVersesWithWordWindow.Open = true;
-            CategorizedBibleVersesWithWordWindow.Word = currently_selected_word;
 
             // UPDATE THE VERSES DISPLAYED IN THE WINDOW.
-            /// @todo GroupedBibleVersesWithWordWindow.VersesByTranslationName.clear();
             for (const auto& translation_name_with_display_status : user_settings.BibleTranslationDisplayStatusesByName)
             {
                 // SKIP OVER ANY TRANSLATION THAT ARE NOT VISIBLE.
@@ -240,25 +150,21 @@ namespace GUI
                 const auto& name_with_bible_translation = bibles.TranslationsByAbbreviatedName.find(translation_name);
                 const BIBLE_DATA::BibleTranslation& bible_translation = name_with_bible_translation->second;
                 BIBLE_DATA::CategorizedBibleVerseSearchResults search_results = bible_translation.WordIndex.GetMatchingVerses(
-                    CurrentlySelectedBibleVerseId,
-                    currently_selected_word);
+                    user_selections.CurrentlySelectedBibleVerseId,
+                    user_selections.CurrentlySelectedWord);
                 CategorizedBibleVersesWithWordWindow.VersesByTranslationName[translation_name] = search_results;
             }
         }
 
-        CategorizedBibleVersesWithWordWindow.UpdateAndRender(
-            CurrentlyHighlightedWord, 
-            currently_selected_word, 
-            CurrentlySelectedBibleVerseId, 
-            user_settings);
-#endif
+        CategorizedBibleVersesWithWordWindow.UpdateAndRender(user_selections, user_settings);
 
+        // UPDATE AND RENDER DEBUGGING WINDOWS.
         MetricsWindow.UpdateAndRender();
         StyleEditorWindow.UpdateAndRender();
         DemoWindow.UpdateAndRender();
         AboutWindow.UpdateAndRender();
 
-        // RENDER THE GUI.
+        // FINISH RENDERING THE GUI.
         ImGui::Render();
         ImDrawData* gui_draw_data = ImGui::GetDrawData();
         ImGui_ImplOpenGL3_RenderDrawData(gui_draw_data);

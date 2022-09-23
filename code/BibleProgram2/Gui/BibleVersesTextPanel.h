@@ -4,6 +4,7 @@
 #include <vector>
 #include "BibleData/BibleVerse.h"
 #include "BibleData/BibleVerseId.h"
+#include "Gui/UserSelections.h"
 #include "Gui/UserSettings.h"
 
 namespace GUI
@@ -17,9 +18,7 @@ namespace GUI
     public:
         static void UpdateAndRender(
             const std::vector<BIBLE_DATA::BibleVerse>& verses, 
-            std::string& currently_highlighted_word,
-            std::string& currently_selected_word,
-            BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
+            UserSelections& user_selections,
             UserSettings& user_settings);
     };
 }

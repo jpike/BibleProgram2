@@ -12,15 +12,11 @@ namespace GUI
     /// Some of the implementation here is based on ImGui's multi-line text input
     /// but modified/simplified for our purposes here.
     /// @param[in]  verses - The verse content to render.
-    /// @param[in,out]  currently_highlighted_word - The currently highlighted word.
-    /// @param[in,out]  currently_selected_word - The currently selected word.
-    /// @param[in,out]  currently_selected_verse_id - The ID of the currently selected verse (if one exists).
+    /// @param[in,out]  user_selections - User selections.
     /// @param[in,out]  user_settings - User settings.
     void BibleVersesTextPanel::UpdateAndRender(
         const std::vector<BIBLE_DATA::BibleVerse>& verses, 
-        std::string& currently_highlighted_word,
-        std::string& currently_selected_word,
-        BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
+        UserSelections& user_selections,
         UserSettings& user_settings)
     {
         // COMPUTE THE BOUNDING BOX FOR THE VERSE TEXT.
@@ -642,24 +638,24 @@ namespace GUI
             // SET THE TEXT COLOR.
             // A temporarily different (usually) highlight color is used when hovering over.
             bool mouse_over_text_bounding_box = text_render_command.TextBoundingBox.Contains(gui_context.IO.MousePos);
-            bool is_currently_highlighted_word = (normalized_word == currently_highlighted_word) || mouse_over_text_bounding_box;
+            bool is_currently_highlighted_word = (normalized_word == user_selections.CurrentlyHighlightedWord) || mouse_over_text_bounding_box;
             if (is_currently_highlighted_word)
             {
                 /// @todo   Something other than yellow for highlights?
                 color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
 
-                currently_highlighted_word = normalized_word;
+                user_selections.CurrentlyHighlightedWord = normalized_word;
             }
 
             if (mouse_over_text_bounding_box)
             {
                 if (user_input.MouseClicked[LEFT_MOUSE_BUTTON])
                 {
-                    std::printf("Clicked on %s\n", currently_highlighted_word.c_str());
+                    std::printf("Clicked on %s\n", user_selections.CurrentlyHighlightedWord.c_str());
 
-                    currently_selected_word = currently_highlighted_word;
+                    user_selections.CurrentlySelectedWord = user_selections.CurrentlyHighlightedWord;
 
-                    currently_selected_verse_id = text_render_command.BibleVerseId;
+                    user_selections.CurrentlySelectedBibleVerseId = text_render_command.BibleVerseId;
                 }
             }
                    

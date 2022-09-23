@@ -182,17 +182,20 @@ int main()
         // BUILD DEBUG VERSIONS OF THE PROJECTS.
         int debug_build_exit_code = build.Run(workspace_folder_path, "debug");
         bool debug_build_succeeded = (EXIT_SUCCESS == debug_build_exit_code);
-        return debug_build_succeeded;
-#if RELEASE_BUILD
         if (!debug_build_succeeded)
         {
             return debug_build_exit_code;
         }
 
         // BUILD RELEASE VERSIONS OF THE PROJECT.
+        /// @todo   Cleaner way to handle different build variants!
+        cpp_libraries.AdditionalLibraryFolderPaths = 
+        {
+            workspace_folder_path / "../CppLibraries/build/release",
+            workspace_folder_path / "../CppLibraries/ThirdParty/SDL"
+        };
         int release_build_exit_code = build.Run(workspace_folder_path, "release");
         return release_build_exit_code;
-#endif
     }
     catch (const std::exception& exception)
     {

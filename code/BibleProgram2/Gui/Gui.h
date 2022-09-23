@@ -3,13 +3,13 @@
 #include <optional>
 #include "BibleData/Bibles.h"
 #include "Graphics/OpenGL/OpenGLGraphicsDevice.h"
-#include "Gui/BibleVersesWithWordWindow.h"
 #include "Gui/CategorizedBibleVersesWithWordWindow.h"
 #include "Gui/Debugging/AboutWindow.h"
 #include "Gui/Debugging/DemoWindow.h"
 #include "Gui/Debugging/GuiMetricsWindow.h"
 #include "Gui/Debugging/StyleEditorWindow.h"
 #include "Gui/MainBibleVersesWindow.h"
+#include "Gui/UserSelections.h"
 #include "Gui/UserSettings.h"
 #include "Windowing/SdlWindow.h"
 
@@ -25,18 +25,13 @@ namespace GUI
         void UpdateAndRender(
             const WINDOWING::SdlWindow& window, 
             const BIBLE_DATA::Bibles& bibles,
+            UserSelections& user_selections,
             UserSettings& user_settings);
 
         void Shutdown();
 
-        /// The currently selected Bible verse ID.
-        BIBLE_DATA::BibleVerseId CurrentlySelectedBibleVerseId = {};
-        /// The word currently highlighted in the GUI.
-        std::string CurrentlyHighlightedWord = "";
         /// The window for displaying the main verse(s) being studied.
         MainBibleVersesWindow MainBibleVersesWindow = {};
-        /// The window for other verses with the currently clicked-on word.
-        BibleVersesWithWordWindow BibleVersesWithWordWindow = {};
         /// The window for other verses (in categorized form) with the currently clicked-on word from a verse.
         CategorizedBibleVersesWithWordWindow CategorizedBibleVersesWithWordWindow = {};
         /// A window displaying basic GUI metrics.

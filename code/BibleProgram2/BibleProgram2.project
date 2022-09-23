@@ -14,7 +14,6 @@
 #include <stb/stb_image.h>
 
 #include "Gui/BibleVersesTextPanel.cpp"
-#include "Gui/BibleVersesWithWordWindow.cpp"
 #include "Gui/CategorizedBibleVersesWithWordWindow.cpp"
 #include "Gui/Debugging/AboutWindow.cpp"
 #include "Gui/Debugging/DemoWindow.cpp"

@@ -2,9 +2,11 @@
 
 #include <string>
 #include <unordered_map>
+#include "BibleData/Bibles.h"
 #include "BibleData/BibleVerse.h"
 #include "BibleData/BibleVerseId.h"
 #include "BibleData/BibleVerseRange.h"
+#include "Gui/UserSelections.h"
 #include "Gui/UserSettings.h"
 
 namespace GUI
@@ -13,12 +15,15 @@ namespace GUI
     class MainBibleVersesWindow
     {
     public:
-        void UpdateAndRender(
-            std::string& currently_highlighted_word, 
-            std::string& currently_selected_word,
-            BIBLE_DATA::BibleVerseId& currently_selected_verse_id,
-            UserSettings& user_settings);
+        // PUBLIC METHODS.
+        void OpenForVerses(
+            const BIBLE_DATA::BibleVerseRange& verse_range, 
+            const BIBLE_DATA::Bibles& bibles,
+            const UserSettings& user_settings);
+        void UpdateAndRender(UserSelections& user_selections, UserSettings& user_settings);
 
+    private:
+        // MEMBER VARIABLES.
         /// True if the window is open; false otherwise.
         bool Open = false;
         /// The range of verses displayed in the window.
