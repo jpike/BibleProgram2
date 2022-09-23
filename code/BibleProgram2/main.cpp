@@ -39,18 +39,19 @@ int main()
         // INITIALIZE BASIC DATA BASED ON BIBLE TRANSLATIONS.
         GUI::UserSettings user_settings;
         BIBLE_DATA::Bibles bibles;
+        // The translations must have a scope for the entire program for their memory to remain valid.
+        BIBLE_DATA::BibleTranslation kjv_translation;
+        BIBLE_DATA::BibleTranslation web_translation;
         {
             std::printf("Initializing Bible translations...\n");
             DEBUGGING::SystemClockTimer system_clock_timer("Bible Data Initialization System Clock Timer");
             DEBUGGING::HighResolutionTimer high_resolution_timer("Bible Data Initialization High-Resolution Timer");
-            BIBLE_DATA::BibleTranslation kjv_translation;
             kjv_translation.Text = BIBLE_DATA::KJV_VERSE_TEXT;
             kjv_translation.VerseCharacterRanges = BIBLE_DATA::KJV_VERSE_CHARACTER_RANGES;
             kjv_translation.WordIndex = BIBLE_DATA::BibleWordIndex::Build(&kjv_translation);
             bibles.TranslationsByAbbreviatedName[BIBLE_DATA::BibleTranslation::KJV_ABBREVIATED_NAME] = kjv_translation;
             user_settings.BibleTranslationDisplayStatusesByName[BIBLE_DATA::BibleTranslation::KJV_ABBREVIATED_NAME] = true;
 
-            BIBLE_DATA::BibleTranslation web_translation;
             web_translation.Text = BIBLE_DATA::WEB_VERSE_TEXT;
             web_translation.VerseCharacterRanges = BIBLE_DATA::WEB_VERSE_CHARACTER_RANGES;
             web_translation.WordIndex = BIBLE_DATA::BibleWordIndex::Build(&web_translation);
