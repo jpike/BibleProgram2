@@ -13,6 +13,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+#include "Gui/BibleVerseStatisticsWindow.cpp"
 #include "Gui/BibleVersesTextPanel.cpp"
 #include "Gui/CategorizedBibleVersesWithWordWindow.cpp"
 #include "Gui/Debugging/AboutWindow.cpp"

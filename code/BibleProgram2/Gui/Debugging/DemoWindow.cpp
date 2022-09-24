@@ -1,4 +1,5 @@
-#include <ThirdParty/imgui/imgui.h>
+#include <imgui/imgui.h>
+#include <implot/implot.h>
 #include "Gui/Debugging/DemoWindow.h"
 
 namespace GUI::DEBUGGING
@@ -12,7 +13,8 @@ namespace GUI::DEBUGGING
             return;
         }
 
-        // SHOW THE BUILT-IN DEMO WINDOW.
+        // SHOW THE BUILT-IN DEMO WINDOWS.
         ImGui::ShowDemoWindow(&Open);
+        ImPlot::ShowDemoWindow(&Open);
     }
 }

@@ -116,7 +116,8 @@ namespace GUI
         // SIZE THE WINDOW TO TAKE UP A SMALLER PORTION OF THE LEFT SIDE OF THE WINDOW.
         ImGuiIO& io = ImGui::GetIO();
         ImVec2 available_screen_space_in_pixels = (io.DisplaySize / 2.0f);
-        available_screen_space_in_pixels.x -= 2.0f * ImGui::GetFrameHeightWithSpacing();
+        // The window is designed to take up the left quarter of the screen.
+        available_screen_space_in_pixels.x = available_screen_space_in_pixels.x / 2.0f;
         available_screen_space_in_pixels.y = io.DisplaySize.y - 2.0f * ImGui::GetFrameHeightWithSpacing();
         ImGui::SetNextWindowSize(available_screen_space_in_pixels, ImGuiCond_FirstUseEver);
 

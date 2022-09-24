@@ -3,6 +3,7 @@
 #include <optional>
 #include "BibleData/Bibles.h"
 #include "Graphics/OpenGL/OpenGLGraphicsDevice.h"
+#include "Gui/BibleVerseStatisticsWindow.h"
 #include "Gui/CategorizedBibleVersesWithWordWindow.h"
 #include "Gui/Debugging/AboutWindow.h"
 #include "Gui/Debugging/DemoWindow.h"
@@ -34,6 +35,8 @@ namespace GUI
         MainBibleVersesWindow MainBibleVersesWindow = {};
         /// The window for other verses (in categorized form) with the currently clicked-on word from a verse.
         CategorizedBibleVersesWithWordWindow CategorizedBibleVersesWithWordWindow = {};
+        /// The window for displaying Bible verse statistics.
+        BibleVerseStatisticsWindow BibleVerseStatisticsWindow = {};
         /// A window displaying basic GUI metrics.
         DEBUGGING::GuiMetricsWindow MetricsWindow = {};
         /// A window allowing editing of GUI styles.

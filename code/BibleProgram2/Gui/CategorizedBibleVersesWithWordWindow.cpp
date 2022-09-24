@@ -31,7 +31,9 @@ namespace GUI
         // Window positioning/sizing is only done upon the first use to allow preserving a user's manual changes.
         ImVec2 current_drawing_cursor_position = ImGui::GetCursorPos();
         ImGuiIO& io = ImGui::GetIO();
-        float verses_window_default_x_position = (io.DisplaySize.x / 2.0f);
+        // The window should take up the middle half of the screen.
+        // It is horizontally shifted slightly to avoid overlap with with the window on the right.
+        float verses_window_default_x_position = (io.DisplaySize.x / 4.0f) + ImGui::GetFrameHeightWithSpacing();
         ImVec2 verses_window_default_position(verses_window_default_x_position, current_drawing_cursor_position.y);
         ImGui::SetNextWindowPos(verses_window_default_position, ImGuiCond_FirstUseEver);
         ImVec2 available_screen_space_in_pixels = (io.DisplaySize / 2.0f);
@@ -146,7 +148,7 @@ namespace GUI
                     {
                         // The number of matching verses is included in the title for easy statistical information.
                         const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
-                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesInSameBook.size()) + ")";
+                        std::string column_title = translation_name + " (" + std::to_string(current_search_results.VersesInSameBook.size()) + ")";
                         ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
@@ -182,7 +184,7 @@ namespace GUI
                     {
                         // The number of matching verses is included in the title for easy statistical information.
                         const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
-                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesInOtherBooksByAuthor.size()) + ")";
+                        std::string column_title = translation_name + " (" + std::to_string(current_search_results.VersesInOtherBooksByAuthor.size()) + ")";
                         ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
@@ -218,7 +220,7 @@ namespace GUI
                     {
                         // The number of matching verses is included in the title for easy statistical information.
                         const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
-                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesInBooksOfSameGenreByOtherAuthorsInSameTestament.size()) + ")";
+                        std::string column_title = translation_name + " (" + std::to_string(current_search_results.VersesInBooksOfSameGenreByOtherAuthorsInSameTestament.size()) + ")";
                         ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
@@ -254,7 +256,7 @@ namespace GUI
                     {
                         // The number of matching verses is included in the title for easy statistical information.
                         const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
-                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesElsewhereInSameTestament.size()) + ")";
+                        std::string column_title = translation_name + " (" + std::to_string(current_search_results.VersesElsewhereInSameTestament.size()) + ")";
                         ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
@@ -290,7 +292,7 @@ namespace GUI
                     {
                         // The number of matching verses is included in the title for easy statistical information.
                         const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
-                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesFromOtherTestament.size()) + ")";
+                        std::string column_title = translation_name + " (" + std::to_string(current_search_results.VersesFromOtherTestament.size()) + ")";
                         ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();

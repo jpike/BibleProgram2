@@ -1,6 +1,7 @@
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl.h>
+#include <implot/implot.h>
 #include "BibleData/BibleVerse.h"
 #include "BibleData/BibleVerseRange.h"
 #include "Debugging/Timer.h"
@@ -21,6 +22,8 @@ namespace GUI
         ImGui_ImplSDL2_InitForOpenGL(window.UnderlyingWindow, graphics_device.SdlOpenGLContext);
         const char* const GLSL_VERSION = "#version 130";
         ImGui_ImplOpenGL3_Init(GLSL_VERSION);
+
+        ImPlot::CreateContext();
 
         Gui gui;
         return gui;
@@ -137,7 +140,11 @@ namespace GUI
             CategorizedBibleVersesWithWordWindow.Word = user_selections.CurrentlySelectedWord;
             CategorizedBibleVersesWithWordWindow.WordStem.clear();
 
-            // UPDATE THE VERSES DISPLAYED IN THE WINDOW.
+            BibleVerseStatisticsWindow.Open = true;
+            BibleVerseStatisticsWindow.Word = user_selections.CurrentlySelectedWord;
+            BibleVerseStatisticsWindow.VersesByBook.clear();
+
+            // UPDATE THE VERSES DISPLAYED IN THE WINDOWS.
             for (const auto& translation_name_with_display_status : user_settings.BibleTranslationDisplayStatusesByName)
             {
                 // SKIP OVER ANY TRANSLATION THAT ARE NOT VISIBLE.
@@ -155,10 +162,18 @@ namespace GUI
                     user_selections.CurrentlySelectedBibleVerseId,
                     user_selections.CurrentlySelectedWord);
                 CategorizedBibleVersesWithWordWindow.VersesByTranslationName[translation_name] = search_results;
+
+                /// @todo   How to handle different translations for this statistics window?
+                std::vector<BIBLE_DATA::BibleVerse> verses_with_word = bible_translation.WordIndex.GetMatchingVerses(user_selections.CurrentlySelectedWord);
+                for (const BIBLE_DATA::BibleVerse& verse : verses_with_word)
+                {
+                    BibleVerseStatisticsWindow.VersesByBook[verse.Id.Book].push_back(verse);
+                }
             }
         }
 
         CategorizedBibleVersesWithWordWindow.UpdateAndRender(user_selections, user_settings);
+        BibleVerseStatisticsWindow.UpdateAndRender();
 
         // UPDATE AND RENDER DEBUGGING WINDOWS.
         MetricsWindow.UpdateAndRender();
@@ -175,6 +190,7 @@ namespace GUI
     /// Shuts down the GUI.
     void Gui::Shutdown()
     {
+        ImPlot::DestroyContext();
         ImGui_ImplSDL2_Shutdown();
         ImGui_ImplOpenGL3_Shutdown();
         ImGui::DestroyContext();

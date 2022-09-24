@@ -109,6 +109,7 @@ int main()
             "gl3w.lib",
             "SDL2.lib", 
             "stmr.lib",
+            "implot.lib",
             "CppLibraries.lib",
         },
     };
@@ -124,6 +125,7 @@ int main()
         {
             workspace_folder_path / "../CppLibraries/ThirdParty",
             workspace_folder_path / "../CppLibraries/ThirdParty/imgui",
+            workspace_folder_path / "../CppLibraries/ThirdParty/implot",
             workspace_folder_path / "../CppLibraries/ThirdParty/SDL",
             workspace_folder_path / "code/BibleLibrary",
         },
