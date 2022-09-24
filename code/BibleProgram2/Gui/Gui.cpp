@@ -134,6 +134,8 @@ namespace GUI
         if (displayed_verses_with_word_outdated)
         {
             CategorizedBibleVersesWithWordWindow.Open = true;
+            CategorizedBibleVersesWithWordWindow.Word = user_selections.CurrentlySelectedWord;
+            CategorizedBibleVersesWithWordWindow.WordStem.clear();
 
             // UPDATE THE VERSES DISPLAYED IN THE WINDOW.
             for (const auto& translation_name_with_display_status : user_settings.BibleTranslationDisplayStatusesByName)

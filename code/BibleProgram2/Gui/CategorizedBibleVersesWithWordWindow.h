@@ -20,8 +20,11 @@ namespace GUI
 
         /// True if the window is open; false otherwise.
         bool Open = false;
+        /// The current word being focused on.
+        std::string Word = "";
+        /// The stem of the current word being focused on.
+        std::string WordStem = "";
         /// The current verses being displayed.
-        /// @todo   std::vector<BIBLE_DATA::BibleVerse> Verses = {};
         std::unordered_map<std::string, BIBLE_DATA::CategorizedBibleVerseSearchResults> VersesByTranslationName = {};
     };
 }

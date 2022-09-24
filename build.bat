@@ -108,6 +108,7 @@ int main()
         { 
             "gl3w.lib",
             "SDL2.lib", 
+            "stmr.lib",
             "CppLibraries.lib",
         },
     };

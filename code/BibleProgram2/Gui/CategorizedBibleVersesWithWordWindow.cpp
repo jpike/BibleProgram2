@@ -1,5 +1,6 @@
 #include <string_view>
 #include <imgui/imgui.h>
+#include <stmr/stmr.h>
 #include "Gui/BibleVersesTextPanel.h"
 #include "Gui/CategorizedBibleVersesWithWordWindow.h"
 
@@ -16,6 +17,16 @@ namespace GUI
             return;
         }
 
+        // UPDATE THE WORD STEM IF IT IS OUT-OF-DATE.
+        bool word_stem_populated = !WordStem.empty();
+        if (!word_stem_populated)
+        {
+            constexpr int WORD_START_INDEX = 0;
+            int word_character_count = static_cast<int>(Word.length());
+            int word_stem_end_index = stem(const_cast<char*>(Word.c_str()), WORD_START_INDEX, word_character_count);
+            WordStem = Word.substr(WORD_START_INDEX, word_stem_end_index);
+        }
+
         // RENDER EACH VERSE IN THE WINDOW.
         // Window positioning/sizing is only done upon the first use to allow preserving a user's manual changes.
         ImVec2 current_drawing_cursor_position = ImGui::GetCursorPos();
@@ -28,16 +39,16 @@ namespace GUI
         available_screen_space_in_pixels.y = io.DisplaySize.y - 2.0f * ImGui::GetFrameHeightWithSpacing();
         ImGui::SetNextWindowSize(available_screen_space_in_pixels, ImGuiCond_FirstUseEver);
 
-        std::string window_title_and_id = user_selections.CurrentlySelectedWord + "###Word";
+        std::string window_title_and_id = Word + "###Word";
 
         if (ImGui::Begin(window_title_and_id.c_str(), &Open))
         {
             // ALLOW A USER TO EDIT THE COLOR FOR THE CURRENT WORD.
             ImVec4 word_color = { 1.0f, 1.0f, 1.0f, 1.0f };
-            bool word_already_has_color = user_settings.ColorsByWord.contains(user_selections.CurrentlySelectedWord);
+            bool word_already_has_color = user_settings.ColorsByWord.contains(Word);
             if (word_already_has_color)
             {
-                word_color = user_settings.ColorsByWord[user_selections.CurrentlySelectedWord];
+                word_color = user_settings.ColorsByWord[Word];
             }
             float color_components[3] =
             {
@@ -48,15 +59,19 @@ namespace GUI
 
             // No label is displayed because it results in too much space to the right of the colored square.
             if (ImGui::ColorEdit3(
-                user_selections.CurrentlySelectedWord.c_str(),
+                Word.c_str(),
                 color_components,
                 ImGuiColorEditFlags_NoInputs))
             {
                 word_color.x = color_components[0];
                 word_color.y = color_components[1];
                 word_color.z = color_components[2];
-                user_settings.ColorsByWord[user_selections.CurrentlySelectedWord] = word_color;
+                user_settings.ColorsByWord[Word] = word_color;
             }
+
+            // DISPLAY THE STEM FOR THE CURRENT WORD.
+            ImGui::SameLine();
+            ImGui::Text("(stem: %s)", WordStem.c_str());
 
             // RENDER THE VERSES FOR EACH CATEGORY.
             constexpr int VERSE_CATEGORY_COUNT = 6;
@@ -74,7 +89,7 @@ namespace GUI
                 // DETERMINE THE COLUMNS FOR DIFFERENT TRANSLATIONS.
                 // One column is needed per displayed translation.
                 unsigned int translation_column_count = 0;
-                std::vector<std::string_view> visible_translation_names;
+                std::vector<std::string> visible_translation_names;
                 for (const auto& translation_name_and_display_status : user_settings.BibleTranslationDisplayStatusesByName)
                 {
                     // TRACK THE VISIBLE TRANSLATION.
@@ -91,9 +106,12 @@ namespace GUI
                 if (ImGui::BeginTable("###SameChapterVersesByTranslationTable", translation_column_count, ImGuiTableFlags_ScrollY))
                 {
                     // DEFINE COLUMN HEADERS FOR EACH TRANSLATION.
-                    for (const std::string_view translation_name : visible_translation_names)
+                    for (const std::string& translation_name : visible_translation_names)
                     {
-                        ImGui::TableSetupColumn(translation_name.data());
+                        // The number of matching verses is included in the title for easy statistical information.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+                        std::string column_title = translation_name + " (" + std::to_string(current_search_results.VersesInSameChapter.size()) +")";
+                        ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
 
@@ -124,9 +142,12 @@ namespace GUI
                 if (ImGui::BeginTable("###SameBookVersesByTranslationTable", translation_column_count, ImGuiTableFlags_ScrollY))
                 {
                     // DEFINE COLUMN HEADERS FOR EACH TRANSLATION.
-                    for (const std::string_view translation_name : visible_translation_names)
+                    for (const std::string& translation_name : visible_translation_names)
                     {
-                        ImGui::TableSetupColumn(translation_name.data());
+                        // The number of matching verses is included in the title for easy statistical information.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesInSameBook.size()) + ")";
+                        ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
 
@@ -157,9 +178,12 @@ namespace GUI
                 if (ImGui::BeginTable("###SameAuthorByTranslationTable", translation_column_count, ImGuiTableFlags_ScrollY))
                 {
                     // DEFINE COLUMN HEADERS FOR EACH TRANSLATION.
-                    for (const std::string_view translation_name : visible_translation_names)
+                    for (const std::string& translation_name : visible_translation_names)
                     {
-                        ImGui::TableSetupColumn(translation_name.data());
+                        // The number of matching verses is included in the title for easy statistical information.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesInOtherBooksByAuthor.size()) + ")";
+                        ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
 
@@ -190,9 +214,12 @@ namespace GUI
                 if (ImGui::BeginTable("###SameGenreByTranslationTable", translation_column_count, ImGuiTableFlags_ScrollY))
                 {
                     // DEFINE COLUMN HEADERS FOR EACH TRANSLATION.
-                    for (const std::string_view translation_name : visible_translation_names)
+                    for (const std::string& translation_name : visible_translation_names)
                     {
-                        ImGui::TableSetupColumn(translation_name.data());
+                        // The number of matching verses is included in the title for easy statistical information.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesInBooksOfSameGenreByOtherAuthorsInSameTestament.size()) + ")";
+                        ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
 
@@ -223,9 +250,12 @@ namespace GUI
                 if (ImGui::BeginTable("###SameTestamentByTranslationTable", translation_column_count, ImGuiTableFlags_ScrollY))
                 {
                     // DEFINE COLUMN HEADERS FOR EACH TRANSLATION.
-                    for (const std::string_view translation_name : visible_translation_names)
+                    for (const std::string& translation_name : visible_translation_names)
                     {
-                        ImGui::TableSetupColumn(translation_name.data());
+                        // The number of matching verses is included in the title for easy statistical information.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesElsewhereInSameTestament.size()) + ")";
+                        ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
 
@@ -256,9 +286,12 @@ namespace GUI
                 if (ImGui::BeginTable("###OtherTestamentByTranslationTable", translation_column_count, ImGuiTableFlags_ScrollY))
                 {
                     // DEFINE COLUMN HEADERS FOR EACH TRANSLATION.
-                    for (const std::string_view translation_name : visible_translation_names)
+                    for (const std::string& translation_name : visible_translation_names)
                     {
-                        ImGui::TableSetupColumn(translation_name.data());
+                        // The number of matching verses is included in the title for easy statistical information.
+                        const BIBLE_DATA::CategorizedBibleVerseSearchResults& current_search_results = VersesByTranslationName[translation_name];
+                        std::string column_title = translation_name + "(" + std::to_string(current_search_results.VersesFromOtherTestament.size()) + ")";
+                        ImGui::TableSetupColumn(column_title.c_str());
                     }
                     ImGui::TableHeadersRow();
 
